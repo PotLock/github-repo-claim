@@ -1,17 +1,28 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import GitHub from '@/lib/utils/github';
 import { Octokit } from '@octokit/rest';
 import styles from '@/styles/app.module.css';
+import debounce from 'lodash/debounce';
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState('');
   const [error, setError] = useState('');
   const [fundingJson, setFundingJson] = useState(null);
+  const [isValidUrl, setIsValidUrl] = useState(true);
+
+  const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
+
+  const validateUrl = useCallback(
+    debounce((url) => {
+      setIsValidUrl(githubUrlRegex.test(url));
+      setError(url && !githubUrlRegex.test(url) ? 'Please enter a valid GitHub repository URL' : '');
+    }, 300),
+    []
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
-    if (githubUrlRegex.test(repoUrl)) {
+    if (isValidUrl) {
       setError('');
       try {
         const octokit = new Octokit();
@@ -30,13 +41,13 @@ export default function Home() {
       } catch (error) {
         setError(error.message);
       }
-    } else {
-      setError('Please enter a valid GitHub repository URL');
     }
   };
 
   const handleInputChange = (e) => {
-    setRepoUrl(e.target.value);
+    const url = e.target.value;
+    setRepoUrl(url);
+    validateUrl(url);
   };
 
   return (
@@ -44,14 +55,21 @@ export default function Home() {
       <div className={styles.container}>
         <h1 className={styles.title}>GitHub Repo Funding Checker</h1>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <input
-            type="text"
-            value={repoUrl}
-            onChange={handleInputChange}
-            placeholder="Enter GitHub repository URL"
-            className={styles.input}
-          />
-          <button type="submit" className={styles.button}>
+          <div className={styles.inputWrapper}>
+            <input
+              type="text"
+              value={repoUrl}
+              onChange={handleInputChange}
+              placeholder="Enter GitHub repository URL"
+              className={`${styles.input} ${!isValidUrl && repoUrl ? styles.inputError : ''}`}
+            />
+            {!isValidUrl && repoUrl && (
+              <span className={styles.errorIcon} title="Invalid URL">
+                ⚠️
+              </span>
+            )}
+          </div>
+          <button type="submit" className={styles.button} disabled={!isValidUrl || !repoUrl}>
             Check Funding
           </button>
         </form>

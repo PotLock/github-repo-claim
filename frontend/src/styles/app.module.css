@@ -280,3 +280,30 @@
   line-height: 1.4;
   color: #333;
 }
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputError {
+  border-color: #d32f2f;
+}
+
+.errorIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #d32f2f;
+  cursor: help;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  background-color: #cccccc;
+}
