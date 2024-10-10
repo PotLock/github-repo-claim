@@ -3,6 +3,7 @@ import GitHub from '@/lib/utils/github';
 import { Octokit } from '@octokit/rest';
 import styles from '@/styles/app.module.css';
 import repos from '../../data/repos.json';
+import { FaGithub, FaStar, FaCodeBranch } from 'react-icons/fa';
 
 export default function Leaderboard() {
   const [repoData, setRepoData] = useState([]);
@@ -81,27 +82,44 @@ export default function Leaderboard() {
         <table className={styles.leaderboardTable}>
           <thead>
             <tr>
+              <th>Rank</th>
               <th>Name</th>
               <th onClick={() => handleSort('stargazers_count')} className={styles.sortable}>
-                Stars {sortBy === 'stargazers_count' && (sortOrder === 'desc' ? '▼' : '▲')}
+                <FaStar /> Stars {sortBy === 'stargazers_count' && (sortOrder === 'desc' ? '▼' : '▲')}
               </th>
               <th onClick={() => handleSort('forks_count')} className={styles.sortable}>
-                Forks {sortBy === 'forks_count' && (sortOrder === 'desc' ? '▼' : '▲')}
+                <FaCodeBranch /> Forks {sortBy === 'forks_count' && (sortOrder === 'desc' ? '▼' : '▲')}
               </th>
               <th>FUNDING.json</th>
               <th>Tip</th>
             </tr>
           </thead>
           <tbody>
-            {sortedRepos.map((repo) => (
+            {sortedRepos.map((repo, index) => (
               <>
                 <tr key={repo.id}>
-                  <td>{repo.full_name}</td>
+                  <td className={styles.rank}>
+                    {index + 1}
+                    {index === 0 && ' 🥇'}
+                    {index === 1 && ' 🥈'}
+                    {index === 2 && ' 🥉'}
+                  </td>
+                  <td>
+                    <a
+                      href={repo.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.repoLink}
+                    >
+                      <FaGithub className={styles.githubIcon} />
+                      {repo.full_name}
+                    </a>
+                  </td>
                   <td>{repo.stargazers_count}</td>
                   <td>{repo.forks_count}</td>
                   <td>
                     {repo.fundingJson ? (
-                      <button onClick={() => toggleExpandRepo(repo.id)}>
+                      <button onClick={() => toggleExpandRepo(repo.id)} className={styles.showButton}>
                         {expandedRepo === repo.id ? 'Hide' : 'Show'}
                       </button>
                     ) : (
@@ -109,21 +127,25 @@ export default function Leaderboard() {
                     )}
                   </td>
                   <td>
-                    {getPotlockNearAddress(repo.fundingJson) && (
-                      <a
-                        href={`https://alpha.potlock.org/profile/${getPotlockNearAddress(repo.fundingJson)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.tipButton}
-                      >
-                        Tip
-                      </a>
-                    )}
+                    {(() => {
+                      const potlockAddress = getPotlockNearAddress(repo.fundingJson);
+                      console.log(`Potlock address for ${repo.full_name}:`, potlockAddress);
+                      return potlockAddress ? (
+                        <a
+                          href={`https://alpha.potlock.org/profile/${potlockAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.tipButton}
+                        >
+                          Tip
+                        </a>
+                      ) : null;
+                    })()}
                   </td>
                 </tr>
                 {expandedRepo === repo.id && (
                   <tr>
-                    <td colSpan="5">
+                    <td colSpan="6">
                       <pre className={styles.fundingJson}>
                         {JSON.stringify(repo.fundingJson, null, 2)}
                       </pre>

@@ -310,19 +310,32 @@
 
 .leaderboardTable {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .leaderboardTable th,
 .leaderboardTable td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  padding: 12px 15px;
   text-align: left;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .leaderboardTable th {
-  background-color: #f2f2f2;
+  background-color: #f5f5f5;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.leaderboardTable tr:last-child td {
+  border-bottom: none;
 }
 
 .sortable {
@@ -335,15 +348,17 @@
 
 .fundingJson {
   background-color: #f8f8f8;
-  padding: 10px;
+  padding: 15px;
   border-radius: 4px;
   white-space: pre-wrap;
   word-break: break-all;
+  font-size: 0.9rem;
+  margin: 10px 0;
 }
 
 .tipButton {
   display: inline-block;
-  padding: 5px 10px;
+  padding: 6px 12px;
   background-color: #4CAF50;
   color: white;
   text-decoration: none;
@@ -354,4 +369,38 @@
 
 .tipButton:hover {
   background-color: #45a049;
+}
+
+.repoLink {
+  display: flex;
+  align-items: center;
+  color: #0366d6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.repoLink:hover {
+  text-decoration: underline;
+}
+
+.githubIcon {
+  margin-right: 8px;
+}
+
+.rank {
+  font-weight: bold;
+  text-align: center;
+}
+
+.showButton {
+  padding: 4px 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.showButton:hover {
+  background-color: #e0e0e0;
 }
