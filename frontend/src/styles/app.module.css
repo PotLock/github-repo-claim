@@ -477,3 +477,20 @@
   border-color: #0070f3;
   box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
 }
+
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mainContent {
+  flex: 1 0 auto;
+}
+
+.footer {
+  flex-shrink: 0;
+  background-color: #f8f9fa;
+  padding: 1rem 0;
+  text-align: center;
+}
