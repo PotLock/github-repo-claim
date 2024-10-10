@@ -28,7 +28,7 @@
     "bootstrap-icons": "^1.11.3",
     "install": "^0.13.0",
     "lodash": "^4.17.21",
-    "near-api-js": "4.0.3",
+    "near-api-js": "^2.1.4",
     "next": "14.2.13",
     "octokit": "^4.0.2",
     "react": "^18",
@@ -37,9 +37,9 @@
     "wagmi": "^2.12.16"
   },
   "resolutions": {
-    "near-api-js": "4.0.3",
-    "@near-wallet-selector/core/near-api-js": "4.0.3",
-    "@near-wallet-selector/ethereum-wallets/near-api-js": "4.0.3"
+    "near-api-js": "^2.1.4",
+    "@near-wallet-selector/core/near-api-js": "^2.1.4",
+    "@near-wallet-selector/ethereum-wallets/near-api-js": "^2.1.4"
   },
   "devDependencies": {
     "@types/node": "^22.7.4",
