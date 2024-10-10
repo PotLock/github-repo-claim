@@ -19,6 +19,7 @@ export default function Leaderboard() {
       const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
       const github = new GitHub(octokit);
       const repoPromises = repos.map(async (repoUrl) => {
+        console.log(`Fetching data for repo: ${repoUrl}`);
         const repo = await github.getRepoByUrl(repoUrl);
         let fundingJson = null;
         try {
@@ -29,12 +30,14 @@ export default function Leaderboard() {
             path: 'FUNDING.json',
           });
           fundingJson = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
+          console.log(`FUNDING.json for ${repo.full_name}:`, fundingJson);
         } catch (error) {
           console.error(`Error fetching FUNDING.json for ${repo.full_name}:`, error);
         }
         return { ...repo, fundingJson };
       });
       const repoData = await Promise.all(repoPromises);
+      console.log('All repo data fetched:', repoData);
       setRepoData(repoData);
     } catch (error) {
       console.error('Error fetching repo data:', error);
@@ -60,6 +63,17 @@ export default function Leaderboard() {
     setExpandedRepo(expandedRepo === repoId ? null : repoId);
   };
 
+  const getPotlockNearAddress = (fundingJson) => {
+    console.log('Checking FUNDING.json for Potlock NEAR address:', fundingJson);
+    if (fundingJson?.potlock?.near?.ownedBy) {
+      const address = fundingJson.potlock.near.ownedBy;
+      console.log('Found Potlock NEAR address:', address);
+      return address;
+    }
+    console.log('No Potlock NEAR address found');
+    return null;
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
@@ -75,6 +89,7 @@ export default function Leaderboard() {
                 Forks {sortBy === 'forks_count' && (sortOrder === 'desc' ? '▼' : '▲')}
               </th>
               <th>FUNDING.json</th>
+              <th>Tip</th>
             </tr>
           </thead>
           <tbody>
@@ -93,10 +108,22 @@ export default function Leaderboard() {
                       'N/A'
                     )}
                   </td>
+                  <td>
+                    {getPotlockNearAddress(repo.fundingJson) && (
+                      <a
+                        href={`https://alpha.potlock.org/profile/${getPotlockNearAddress(repo.fundingJson)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.tipButton}
+                      >
+                        Tip
+                      </a>
+                    )}
+                  </td>
                 </tr>
                 {expandedRepo === repo.id && (
                   <tr>
-                    <td colSpan="4">
+                    <td colSpan="5">
                       <pre className={styles.fundingJson}>
                         {JSON.stringify(repo.fundingJson, null, 2)}
                       </pre>
