@@ -3,19 +3,23 @@ import GitHub from '@/lib/utils/github';
 import { Octokit } from '@octokit/rest';
 import styles from '@/styles/app.module.css';
 import repos from '../../data/repos.json';
-import { FaGithub, FaStar, FaCodeBranch } from 'react-icons/fa';
+import { FaGithub, FaStar, FaCodeBranch, FaSearch } from 'react-icons/fa';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 export default function Leaderboard() {
   const [repoData, setRepoData] = useState([]);
   const [sortBy, setSortBy] = useState('stars');
   const [sortOrder, setSortOrder] = useState('desc');
   const [expandedRepo, setExpandedRepo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchRepoData();
   }, []);
 
   const fetchRepoData = async () => {
+    setIsLoading(true);
     try {
       const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
       const github = new GitHub(octokit);
@@ -42,10 +46,34 @@ export default function Leaderboard() {
       setRepoData(repoData);
     } catch (error) {
       console.error('Error fetching repo data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const sortedRepos = [...repoData].sort((a, b) => {
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const getPotlockNearAddress = (fundingJson) => {
+    if (fundingJson?.potlock?.near?.ownedBy) {
+      return fundingJson.potlock.near.ownedBy;
+    }
+    return null;
+  };
+
+  const filteredRepos = repoData.filter((repo) => {
+    const searchLower = searchTerm.toLowerCase();
+    const fullName = repo.full_name.toLowerCase();
+    const orgName = repo.owner.login.toLowerCase();
+    const nearAddress = getPotlockNearAddress(repo.fundingJson)?.toLowerCase() || '';
+
+    return fullName.includes(searchLower) || 
+           orgName.includes(searchLower) || 
+           nearAddress.includes(searchLower);
+  });
+
+  const sortedRepos = [...filteredRepos].sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
     return sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
@@ -64,21 +92,20 @@ export default function Leaderboard() {
     setExpandedRepo(expandedRepo === repoId ? null : repoId);
   };
 
-  const getPotlockNearAddress = (fundingJson) => {
-    console.log('Checking FUNDING.json for Potlock NEAR address:', fundingJson);
-    if (fundingJson?.potlock?.near?.ownedBy) {
-      const address = fundingJson.potlock.near.ownedBy;
-      console.log('Found Potlock NEAR address:', address);
-      return address;
-    }
-    console.log('No Potlock NEAR address found');
-    return null;
-  };
-
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <h1>Repository Leaderboard</h1>
+        <div className={styles.searchContainer}>
+          <FaSearch className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Search repositories..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className={styles.searchInput}
+          />
+        </div>
         <table className={styles.leaderboardTable}>
           <thead>
             <tr>
@@ -95,65 +122,73 @@ export default function Leaderboard() {
             </tr>
           </thead>
           <tbody>
-            {sortedRepos.map((repo, index) => (
+            {isLoading ? (
               <>
-                <tr key={repo.id}>
-                  <td className={styles.rank}>
-                    {index + 1}
-                    {index === 0 && ' 🥇'}
-                    {index === 1 && ' 🥈'}
-                    {index === 2 && ' 🥉'}
-                  </td>
-                  <td>
-                    <a
-                      href={repo.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.repoLink}
-                    >
-                      <FaGithub className={styles.githubIcon} />
-                      {repo.full_name}
-                    </a>
-                  </td>
-                  <td>{repo.stargazers_count}</td>
-                  <td>{repo.forks_count}</td>
-                  <td>
-                    {repo.fundingJson ? (
-                      <button onClick={() => toggleExpandRepo(repo.id)} className={styles.showButton}>
-                        {expandedRepo === repo.id ? 'Hide' : 'Show'}
-                      </button>
-                    ) : (
-                      'N/A'
-                    )}
-                  </td>
-                  <td>
-                    {(() => {
-                      const potlockAddress = getPotlockNearAddress(repo.fundingJson);
-                      console.log(`Potlock address for ${repo.full_name}:`, potlockAddress);
-                      return potlockAddress ? (
-                        <a
-                          href={`https://alpha.potlock.org/profile/${potlockAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.tipButton}
-                        >
-                          Tip
-                        </a>
-                      ) : null;
-                    })()}
-                  </td>
-                </tr>
-                {expandedRepo === repo.id && (
-                  <tr>
-                    <td colSpan="6">
-                      <pre className={styles.fundingJson}>
-                        {JSON.stringify(repo.fundingJson, null, 2)}
-                      </pre>
+                <SkeletonLoader />
+                <SkeletonLoader />
+                <SkeletonLoader />
+              </>
+            ) : (
+              sortedRepos.map((repo, index) => (
+                <>
+                  <tr key={repo.id}>
+                    <td className={styles.rank}>
+                      {index + 1}
+                      {index === 0 && ' 🥇'}
+                      {index === 1 && ' 🥈'}
+                      {index === 2 && ' 🥉'}
+                    </td>
+                    <td>
+                      <a
+                        href={repo.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.repoLink}
+                      >
+                        <FaGithub className={styles.githubIcon} />
+                        {repo.full_name}
+                      </a>
+                    </td>
+                    <td>{repo.stargazers_count}</td>
+                    <td>{repo.forks_count}</td>
+                    <td>
+                      {repo.fundingJson ? (
+                        <button onClick={() => toggleExpandRepo(repo.id)} className={styles.showButton}>
+                          {expandedRepo === repo.id ? 'Hide' : 'Show'}
+                        </button>
+                      ) : (
+                        'N/A'
+                      )}
+                    </td>
+                    <td>
+                      {(() => {
+                        const potlockAddress = getPotlockNearAddress(repo.fundingJson);
+                        console.log(`Potlock address for ${repo.full_name}:`, potlockAddress);
+                        return potlockAddress ? (
+                          <a
+                            href={`https://alpha.potlock.org/profile/${potlockAddress}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.tipButton}
+                          >
+                            Tip
+                          </a>
+                        ) : null;
+                      })()}
                     </td>
                   </tr>
-                )}
-              </>
-            ))}
+                  {expandedRepo === repo.id && (
+                    <tr>
+                      <td colSpan="6">
+                        <pre className={styles.fundingJson}>
+                          {JSON.stringify(repo.fundingJson, null, 2)}
+                        </pre>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))
+            )}
           </tbody>
         </table>
       </div>

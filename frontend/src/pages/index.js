@@ -1,14 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import GitHub from '@/lib/utils/github';
 import { Octokit } from '@octokit/rest';
 import styles from '@/styles/app.module.css';
 import debounce from 'lodash/debounce';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState('');
   const [error, setError] = useState('');
   const [fundingJson, setFundingJson] = useState(null);
   const [isValidUrl, setIsValidUrl] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
 
@@ -24,6 +26,7 @@ export default function Home() {
     e.preventDefault();
     if (isValidUrl) {
       setError('');
+      setIsLoading(true);
       try {
         const octokit = new Octokit();
         const github = new GitHub(octokit);
@@ -40,6 +43,8 @@ export default function Home() {
         setFundingJson(JSON.parse(content));
       } catch (error) {
         setError(error.message);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -74,7 +79,12 @@ export default function Home() {
           </button>
         </form>
         {error && <p className={styles.error}>{error}</p>}
-        {fundingJson && (
+        {isLoading ? (
+          <div className={styles.result}>
+            <h2>Loading...</h2>
+            <SkeletonLoader />
+          </div>
+        ) : fundingJson && (
           <div className={styles.result}>
             <h2>FUNDING.json Content:</h2>
             <pre>{JSON.stringify(fundingJson, null, 2)}</pre>

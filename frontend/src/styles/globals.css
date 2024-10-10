@@ -69,6 +69,10 @@ a {
   color: inherit;
   text-decoration: none;
 }
+.nav-link.active {
+  font-weight: bold;
+  color: #0070f3; /* or any color you prefer for the active state */
+}
 
 /* Remove or comment out the dark mode media query at the end */
 /*

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { useContext,useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 import { NearContext } from '@/wallets/near';
 
@@ -8,6 +9,7 @@ export const Navigation = () => {
   const { signedAccountId, wallet } = useContext(NearContext);
   const [action, setAction] = useState(() => {});
   const [label, setLabel] = useState('Loading...');
+  const router = useRouter();
 
   useEffect(() => {
     if (!wallet) return;
@@ -29,7 +31,9 @@ export const Navigation = () => {
         </Link>
         <div className="navbar-nav">
           <Link href="/leaderboard" passHref legacyBehavior>
-            <a className="nav-link">Leaderboard</a>
+            <a className={`nav-link ${router.pathname === '/leaderboard' ? 'active' : ''}`}>
+              Leaderboard
+            </a>
           </Link>
           <button className="btn btn-secondary ms-2" onClick={action}>
             {label}

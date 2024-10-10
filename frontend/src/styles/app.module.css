@@ -404,3 +404,76 @@
 .showButton:hover {
   background-color: #e0e0e0;
 }
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeletonContainer {
+  width: 100%;
+}
+
+.skeletonRow {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.skeletonCell {
+  flex: 1;
+  padding: 12px 15px;
+}
+
+.skeletonContent {
+  height: 20px;
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+  background-size: 800px 104px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.loadingContainer h1 {
+  margin-bottom: 20px;
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
