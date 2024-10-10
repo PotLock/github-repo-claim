@@ -22,6 +22,10 @@ export default function Home() {
     }
   };
 
+  const handleInputChange = (e) => {
+    setRepoUrl(e.target.value);
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.description}> </div>
@@ -31,17 +35,16 @@ export default function Home() {
           <input
             type="text"
             value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
+            onChange={handleInputChange}
             placeholder="Enter GitHub repository URL"
             className={styles.input}
           />
           <button type="submit" className={styles.button}>Submit</button>
-          {error && <p className={styles.error}>{error}</p>}
         </form>
+        {error && <p className={styles.error}>{error}</p>}
       </div>
 
       <div className={styles.grid}>
-        <Cards />
       </div>
     </main>
   );
