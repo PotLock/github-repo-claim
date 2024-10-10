@@ -1,3 +1,8 @@
+/**
+ * To-Do
+ * - Add a a route to each repo page when click the row
+ * show NEAR address highlighted in the json
+ */
 import { useState, useEffect } from 'react';
 import GitHub from '@/lib/utils/github';
 import { Octokit } from '@octokit/rest';

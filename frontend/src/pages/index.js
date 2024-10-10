@@ -11,6 +11,9 @@ export default function Home() {
   const [fundingJson, setFundingJson] = useState(null);
   const [isValidUrl, setIsValidUrl] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [devMode, setDevMode] = useState(false);
+  const [defaultBranch, setDefaultBranch] = useState('main');
+  const [nearAddress, setNearAddress] = useState('');
 
   const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
 
@@ -31,22 +34,50 @@ export default function Home() {
         const octokit = new Octokit();
         const github = new GitHub(octokit);
         const repo = await github.getRepoByUrl(repoUrl);
-        await github.verifyFundingJson(repo.owner.login, repo.name);
+        console.log('Default branch:', repo.defaultBranch);
+        setDefaultBranch(repo.defaultBranch || 'main');
+        console.log('Set default branch to:', repo.defaultBranch || 'main');
         
-        // Fetch FUNDING.json content
-        const { data } = await octokit.repos.getContent({
-          owner: repo.owner.login,
-          repo: repo.name,
-          path: 'FUNDING.json',
-        });
-        const content = Buffer.from(data.content, 'base64').toString('utf-8');
-        setFundingJson(JSON.parse(content));
+        let fundingJson = null;
+        try {
+          await github.verifyFundingJson(repo.owner.login, repo.name);
+          
+          // Fetch FUNDING.json content
+          const { data } = await octokit.repos.getContent({
+            owner: repo.owner.login,
+            repo: repo.name,
+            path: 'FUNDING.json',
+          });
+          fundingJson = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
+          console.log(`FUNDING.json for ${repo.full_name}:`, fundingJson);
+          setFundingJson(fundingJson);
+        } catch (error) {
+          console.log('FUNDING.json not found');
+          setFundingJson(null);
+        }
       } catch (error) {
+        console.error('Error fetching repo data:', error.message);
         setError(error.message);
       } finally {
         setIsLoading(false);
       }
     }
+  };
+
+  const handleNearAddressChange = (e) => {
+    setNearAddress(e.target.value);
+  };
+
+  const getGitHubProposalUrl = () => {
+    const fundingJsonContent = JSON.stringify({
+      potlock: {
+        near: {
+          ownedBy: nearAddress
+        }
+      }
+    }, null, 2);
+
+    return `${repoUrl}/new/${defaultBranch}?filename=FUNDING.json&value=${encodeURIComponent(fundingJsonContent)}`;
   };
 
   const handleInputChange = (e) => {
@@ -55,10 +86,35 @@ export default function Home() {
     validateUrl(url);
   };
 
+  const handleDevModeToggle = () => {
+    setDevMode(!devMode);
+    if (!devMode) {
+      setRepoUrl('https://github.com/potlock/core');
+      validateUrl('https://github.com/potlock/core');
+    } else {
+      setRepoUrl('');
+      validateUrl('');
+    }
+  };
+
+  useEffect(() => {
+    setDefaultBranch('main');
+  }, []);
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <h1 className={styles.title}>GitHub Repo Funding Checker</h1>
+        <div className={styles.devModeToggle}>
+          <label>
+            <input
+              type="checkbox"
+              checked={devMode}
+              onChange={handleDevModeToggle}
+            />
+            Dev Mode
+          </label>
+        </div>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputWrapper}>
             <input
@@ -84,12 +140,32 @@ export default function Home() {
             <h2>Loading...</h2>
             <SkeletonLoader />
           </div>
-        ) : fundingJson && (
+        ) : fundingJson ? (
           <div className={styles.result}>
             <h2>FUNDING.json Content:</h2>
             <pre>{JSON.stringify(fundingJson, null, 2)}</pre>
           </div>
-        )}
+        ) : repoUrl && !error ? (
+          <div className={styles.result}>
+            <h2>No FUNDING.json found</h2>
+            <p>Would you like to create one?</p>
+            <input
+              type="text"
+              value={nearAddress}
+              onChange={handleNearAddressChange}
+              placeholder="Enter NEAR address"
+              className={styles.input}
+            />
+            <a
+              href={getGitHubProposalUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.button}
+            >
+              Create FUNDING.json
+            </a>
+          </div>
+        ) : null}
       </div>
     </main>
   );
