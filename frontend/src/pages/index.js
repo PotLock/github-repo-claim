@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import GitHub from '@/lib/utils/github';
+import GitHub, { validNEARAccount } from '@/lib/utils/github'; // Import validNEARAccount
 import { Octokit } from '@octokit/rest';
 import styles from '@/styles/app.module.css';
 import debounce from 'lodash/debounce';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
+
+const EXAMPLE_REPO_URL = 'https://github.com/potlock/core'; // Define the example repo variable
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState('');
@@ -14,6 +16,7 @@ export default function Home() {
   const [devMode, setDevMode] = useState(false);
   const [defaultBranch, setDefaultBranch] = useState('main');
   const [nearAddress, setNearAddress] = useState('');
+  const [nearAddressError, setNearAddressError] = useState(''); // New state for NEAR address error
 
   const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
 
@@ -65,7 +68,15 @@ export default function Home() {
   };
 
   const handleNearAddressChange = (e) => {
-    setNearAddress(e.target.value);
+    const address = e.target.value;
+    setNearAddress(address);
+    
+    // Validate NEAR address
+    if (!validNEARAccount(address)) { // Use the imported function to validate
+      setNearAddressError('Invalid NEAR address format'); // Set error message
+    } else {
+      setNearAddressError(''); // Clear error message if valid
+    }
   };
 
   const getGitHubProposalUrl = () => {
@@ -89,8 +100,9 @@ export default function Home() {
   const handleDevModeToggle = () => {
     setDevMode(!devMode);
     if (!devMode) {
-      setRepoUrl('https://github.com/potlock/core');
-      validateUrl('https://github.com/potlock/core');
+      setRepoUrl(EXAMPLE_REPO_URL); // Use the example repo variable
+      validateUrl(EXAMPLE_REPO_URL);
+      handleSubmit({ preventDefault: () => {} }); // Automatically trigger Check Funding
     } else {
       setRepoUrl('');
       validateUrl('');
@@ -156,11 +168,13 @@ export default function Home() {
               placeholder="Enter NEAR address"
               className={styles.input}
             />
+            {nearAddressError && <p className={styles.error}>{nearAddressError}</p>} {/* Show error message */}
             <a
               href={getGitHubProposalUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.button}
+              className={`${styles.button} ${nearAddressError ? styles.buttonGray : ''}`} // Gray out if error
+              style={{ pointerEvents: nearAddressError ? 'none' : 'auto' }} // Disable link if error
             >
               Create FUNDING.json
             </a>
