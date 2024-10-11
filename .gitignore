@@ -2,3 +2,7 @@
 /frontend/build
 /frontend/node_modules
 frontend/yarn.lock
+/build
+/node_modules
+yarn.lock
+.DS_Store
