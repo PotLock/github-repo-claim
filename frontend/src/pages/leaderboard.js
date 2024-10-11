@@ -40,7 +40,7 @@ export default function Leaderboard() {
             path: 'FUNDING.json',
           });
           fundingJson = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
-          console.log(`FUNDING.json for ${repo.full_name}:`, fundingJson);
+          console.log(`FUNDING.json for ${repo.full_name}:`, fundingJson); // Debugging log
         } catch (error) {
           console.error(`Error fetching FUNDING.json for ${repo.full_name}:`, error);
         }
@@ -162,13 +162,13 @@ export default function Leaderboard() {
                           {expandedRepo === repo.id ? 'Hide' : 'Show'}
                         </button>
                       ) : (
-                        'N/A'
+                        'N/A' // Ensure this is displayed correctly
                       )}
                     </td>
                     <td>
                       {(() => {
                         const potlockAddress = getPotlockNearAddress(repo.fundingJson);
-                        console.log(`Potlock address for ${repo.full_name}:`, potlockAddress);
+                        console.log(`Potlock address for ${repo.full_name}:`, potlockAddress); // Debugging log
                         return potlockAddress ? (
                           <a
                             href={`https://alpha.potlock.org/profile/${potlockAddress}`}
@@ -178,7 +178,7 @@ export default function Leaderboard() {
                           >
                             Tip
                           </a>
-                        ) : null;
+                        ) : 'N/A'; // Ensure this is displayed correctly
                       })()}
                     </td>
                   </tr>
