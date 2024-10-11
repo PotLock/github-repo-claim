@@ -582,3 +582,34 @@
 .toggleReadmeButton.active {
   background-color: #0051a2; /* Active state color */
 }
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.leftColumn, .rightColumn {
+  flex: 1;
+  margin: 0 10px;
+}
+
+.leftColumn {
+  max-width: 48%; /* Adjust as needed */
+}
+
+.rightColumn {
+  max-width: 48%; /* Adjust as needed */
+}
+
+/* Add media queries for responsiveness */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .leftColumn, .rightColumn {
+    max-width: 100%;
+    margin: 10px 0;
+  }
+}
